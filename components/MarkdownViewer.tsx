@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { synthesizeSection } from '../services/gemini';
 
 interface MarkdownViewerProps {
   title: string;
@@ -8,43 +9,96 @@ interface MarkdownViewerProps {
 }
 
 const MarkdownViewer: React.FC<MarkdownViewerProps> = ({ title, path, content }) => {
-  // Simple markdown renderer for the purpose of this UI
+  const [synthesis, setSynthesis] = useState<string | null>(null);
+  const [loadingSynthesis, setLoadingSynthesis] = useState(false);
+
+  useEffect(() => {
+    setSynthesis(null);
+    const triggerSynthesis = async () => {
+      setLoadingSynthesis(true);
+      const result = await synthesizeSection(title, content);
+      setSynthesis(result);
+      setLoadingSynthesis(false);
+    };
+    
+    // Synthesis is an optional, high-level summary
+    const timer = setTimeout(triggerSynthesis, 1500);
+    return () => clearTimeout(timer);
+  }, [content, title]);
+
   const renderContent = (text: string) => {
     return text.split('\n').map((line, i) => {
       if (line.startsWith('# ')) {
-        return <h1 key={i} className="text-3xl font-bold mb-6 text-white border-b border-zinc-800 pb-4">{line.replace('# ', '')}</h1>;
+        return <h1 key={i} className="text-3xl font-bold mb-6 text-white border-b border-zinc-800 pb-4 tracking-tight">{line.replace('# ', '')}</h1>;
       }
       if (line.startsWith('## ')) {
-        return <h2 key={i} className="text-xl font-semibold mt-8 mb-4 text-zinc-200">{line.replace('## ', '')}</h2>;
+        return <h2 key={i} className="text-xl font-semibold mt-10 mb-4 text-zinc-200 tracking-tight flex items-center gap-3">
+          <span className="w-1 h-6 bg-emerald-500/50 rounded-full"></span>
+          {line.replace('## ', '')}
+        </h2>;
       }
       if (line.startsWith('- ')) {
-        return <li key={i} className="ml-6 mb-2 text-zinc-400">{line.replace('- ', '')}</li>;
+        return (
+          <li key={i} className="ml-6 mb-3 text-zinc-400 list-disc marker:text-emerald-500/50">
+            <span className="pl-2">{line.replace('- ', '')}</span>
+          </li>
+        );
       }
       if (line.trim() === '') {
         return <div key={i} className="h-4" />;
       }
-      return <p key={i} className="mb-4 text-zinc-300 leading-relaxed">{line}</p>;
+      return <p key={i} className="mb-5 text-zinc-300 leading-relaxed text-[15px]">{line}</p>;
     });
   };
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="mb-8">
-        <span className="mono text-xs text-emerald-500 uppercase tracking-widest bg-emerald-500/10 px-2 py-1 rounded">
-          {path}
-        </span>
-        <h1 className="text-4xl font-bold mt-4 text-white tracking-tight">{title}</h1>
+    <article className="max-w-3xl mx-auto px-6 py-16 animate-in fade-in slide-in-from-bottom-4 duration-500" role="main">
+      <div className="mb-12">
+        <div className="flex items-center gap-4 mb-4">
+          <span className="mono text-[10px] text-emerald-500 font-bold uppercase tracking-[0.2em] bg-emerald-500/5 border border-emerald-500/20 px-3 py-1 rounded-md">
+            {path}
+          </span>
+          <span className="w-px h-4 bg-zinc-800"></span>
+          <span className="mono text-[10px] text-zinc-600 uppercase tracking-widest">Stage 01 Protocol</span>
+        </div>
+        <h1 className="text-5xl font-extrabold text-white tracking-tighter leading-none mb-6">{title}</h1>
+        
+        {/* Synthesis Box */}
+        {(loadingSynthesis || synthesis) && (
+          <div className="mt-8 p-6 bg-zinc-900/30 border border-zinc-800 rounded-xl relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500/30 group-hover:bg-emerald-500 transition-colors"></div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="mono text-[9px] text-zinc-500 font-bold uppercase tracking-widest">Rapid Synthesis</span>
+              {loadingSynthesis && <div className="w-1 h-1 bg-emerald-500 rounded-full animate-ping"></div>}
+            </div>
+            {loadingSynthesis ? (
+              <div className="space-y-2">
+                <div className="h-3 bg-zinc-800 rounded w-full animate-pulse"></div>
+                <div className="h-3 bg-zinc-800 rounded w-2/3 animate-pulse"></div>
+              </div>
+            ) : (
+              <div className="mono text-xs text-zinc-400 leading-relaxed italic">
+                {synthesis}
+              </div>
+            )}
+          </div>
+        )}
       </div>
       
-      <div className="research-content border-l border-zinc-800 pl-8 ml-1">
+      <div className="research-content space-y-2 border-l border-zinc-900 pl-10 -ml-1 py-2">
         {renderContent(content)}
       </div>
 
-      <div className="mt-16 pt-8 border-t border-zinc-800 text-zinc-500 mono text-xs flex justify-between">
-        <span>STAGE_01_HYPOTHESIS_CORE</span>
-        <span>CONFIDENTIAL_DRAFT_NOT_FOR_POLICY</span>
+      <div className="mt-24 pt-12 border-t border-zinc-800 text-zinc-600 mono text-[10px] flex flex-col sm:flex-row justify-between gap-4 uppercase tracking-widest">
+        <div className="flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-zinc-800"></span>
+          <span>Hash: 8f2a9c...0d1e</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span>CLASSIFIED: INTERNAL_REVIEW_ONLY</span>
+        </div>
       </div>
-    </div>
+    </article>
   );
 };
 
