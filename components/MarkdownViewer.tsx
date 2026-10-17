@@ -1,6 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
-import { synthesizeSection } from '../services/gemini';
+import React from 'react';
 
 interface MarkdownViewerProps {
   title: string;
@@ -9,23 +8,6 @@ interface MarkdownViewerProps {
 }
 
 const MarkdownViewer: React.FC<MarkdownViewerProps> = ({ title, path, content }) => {
-  const [synthesis, setSynthesis] = useState<string | null>(null);
-  const [loadingSynthesis, setLoadingSynthesis] = useState(false);
-
-  useEffect(() => {
-    setSynthesis(null);
-    const triggerSynthesis = async () => {
-      setLoadingSynthesis(true);
-      const result = await synthesizeSection(title, content);
-      setSynthesis(result);
-      setLoadingSynthesis(false);
-    };
-    
-    // Synthesis is an optional, high-level summary
-    const timer = setTimeout(triggerSynthesis, 1500);
-    return () => clearTimeout(timer);
-  }, [content, title]);
-
   const renderContent = (text: string) => {
     return text.split('\n').map((line, i) => {
       if (line.startsWith('# ')) {
@@ -63,26 +45,6 @@ const MarkdownViewer: React.FC<MarkdownViewerProps> = ({ title, path, content })
         </div>
         <h1 className="text-5xl font-extrabold text-white tracking-tighter leading-none mb-6">{title}</h1>
         
-        {/* Synthesis Box */}
-        {(loadingSynthesis || synthesis) && (
-          <div className="mt-8 p-6 bg-zinc-900/30 border border-zinc-800 rounded-xl relative overflow-hidden group">
-            <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500/30 group-hover:bg-emerald-500 transition-colors"></div>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="mono text-[9px] text-zinc-500 font-bold uppercase tracking-widest">Rapid Synthesis</span>
-              {loadingSynthesis && <div className="w-1 h-1 bg-emerald-500 rounded-full animate-ping"></div>}
-            </div>
-            {loadingSynthesis ? (
-              <div className="space-y-2">
-                <div className="h-3 bg-zinc-800 rounded w-full animate-pulse"></div>
-                <div className="h-3 bg-zinc-800 rounded w-2/3 animate-pulse"></div>
-              </div>
-            ) : (
-              <div className="mono text-xs text-zinc-400 leading-relaxed italic">
-                {synthesis}
-              </div>
-            )}
-          </div>
-        )}
       </div>
       
       <div className="research-content space-y-2 border-l border-zinc-900 pl-10 -ml-1 py-2">
