@@ -52,12 +52,12 @@ const App: React.FC = () => {
                   ? 'text-emerald-400 bg-emerald-500/5 border-emerald-500/30' 
                   : 'text-zinc-500 border-zinc-800 hover:text-zinc-300 hover:border-zinc-700'
               }`}
-              title="Toggle AI Auditor Consultation"
+              title="Show or hide the AI analysis security notice"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
               </svg>
-              <span>{showChat ? 'Agent_Online' : 'Open_Auditor'}</span>
+              <span>{showChat ? 'AI_Disabled' : 'Security_Notice'}</span>
             </button>
           </div>
         </header>
@@ -87,7 +87,7 @@ const App: React.FC = () => {
       {/* Interactive AI Sidepanel */}
       {showChat && (
         <div className="w-[22rem] lg:w-[26rem] h-full flex-shrink-0 animate-in slide-in-from-right duration-300 border-l border-zinc-900 shadow-2xl z-30">
-          <ChatPanel currentContent={selectedFile.content} />
+          <ChatPanel />
         </div>
       )}
     </div>
